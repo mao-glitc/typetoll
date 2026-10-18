@@ -1,0 +1,595 @@
+<!doctype html>
+<!--
+  PRODUCT NAME: "TypeToll" (decided 2026-09-25, see ../name-check.md). Tagline: "Pay the toll by typing."
+  Brand rules: no YouTube/Shorts/Instagram/Reels/X in the name or as logos; say "Works on ...".
+  To rename, search-and-replace the exact string "TypeToll" across lp/index.html and lp/privacy.html
+  (it appears in <title>, meta/OG tags, the logo, and body copy). Nothing else depends on it.
+
+  v1.0 IS FREE ONLY. Pro is shown as "coming soon" with no price and no checkout link.
+  When Pro ships (v1.1, extension/config.js PRO_ENABLED = true), restore the price, the
+  "Get Pro" buttons (hero, pricing, final CTA), the Lemon Squeezy pricing note, and the
+  Pro/license wording in the Privacy section and FAQ, and update privacy.html first.
+
+  Open TODOs (search "TODO" in this file):
+  - Chrome Web Store URL for "Add to Chrome"
+  - og:image, canonical URL
+  - Terms page, contact email, maker's name (Refunds page only when Pro goes on sale)
+  - Real testimonials after launch
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TypeToll: pay the toll by typing</title>
+<meta name="description" content="TypeToll is a free Chrome extension: after 5 minutes of short videos, pay the toll by typing. Wait, then hand-type a phrase to keep going. Works on YouTube Shorts, Instagram Reels and X.">
+<meta name="theme-color" content="#0c0c0e">
+<!-- TODO: add <link rel="canonical" href="https://YOUR-DOMAIN/"> once the domain is decided -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="TypeToll: pay the toll by typing">
+<meta property="og:description" content="Five minutes of short videos, shared across sites. Then you wait, and pay the toll by typing out that you're choosing to keep going.">
+<!-- TODO: og:image (1200x630) and og:url -->
+<meta property="og:image" content="">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --bg-2: #121215;
+    --surface: #17171b;
+    --surface-2: #1e1e23;
+    --line: #2a2a31;
+    --text: #f3f0e8;
+    --muted: #a8a49b;
+    --faint: #75726b;
+    --amber: #f5b301;
+    --amber-soft: rgba(245, 179, 1, 0.12);
+    --amber-line: rgba(245, 179, 1, 0.35);
+    --red: #ff6b5b;
+    --radius: 14px;
+    --max: 1120px;
+    --gutter: 24px;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img, svg { max-width: 100%; }
+  a { color: var(--amber); text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  .skip { position: absolute; left: -9999px; top: 8px; background: var(--amber); color: #111; padding: 8px 12px; border-radius: 8px; z-index: 10; }
+  .skip:focus { left: 8px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* ---------- header ---------- */
+  .site-head { position: sticky; top: 0; z-index: 5; background: rgba(12,12,14,0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(42,42,49,0.6); }
+  .site-head .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+  .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 800; letter-spacing: -0.02em; font-size: 18px; }
+  .logo-mark { width: 26px; height: 26px; border-radius: 7px; background: repeating-linear-gradient(-45deg, var(--amber) 0 5px, #111 5px 10px); box-shadow: inset 0 0 0 2px var(--amber); flex: none; }
+  .head-nav { display: flex; align-items: center; gap: 24px; font-size: 15px; }
+  .head-nav a { color: var(--muted); text-decoration: none; }
+  .head-nav a:hover { color: var(--text); }
+  .head-nav .btn { color: #111; }
+
+  /* ---------- buttons ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease, border-color .15s ease; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--amber); color: #111; }
+  .btn-primary:hover { background: #ffc21f; }
+  .btn-ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--amber-line); background: var(--amber-soft); }
+  .btn-sm { min-height: 38px; padding: 0 14px; font-size: 14px; border-radius: 10px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 72px 0 88px; position: relative; }
+  .hero::before { content: ""; position: absolute; inset: -120px 0 auto 0; height: 560px; background: radial-gradient(600px 300px at 75% 30%, rgba(245,179,1,0.10), transparent 70%); pointer-events: none; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; position: relative; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; color: var(--amber); letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 20px; }
+  .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft); }
+  h1 { font-size: clamp(38px, 5.4vw, 66px); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 22px; font-weight: 800; }
+  h1 .hl { color: var(--amber); }
+  .lede { font-size: clamp(17px, 2vw, 20px); color: var(--muted); max-width: 34em; margin: 0 0 32px; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .fine { margin: 16px 0 0; font-size: 14px; color: var(--faint); }
+
+  /* ---------- lock screen mock ---------- */
+  .mock { border-radius: 16px; border: 1px solid var(--line); background: var(--surface); overflow: hidden; box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.02); }
+  .mock-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .dots { display: flex; gap: 6px; flex: none; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a42; display: block; }
+  .url { flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px; color: var(--faint); background: var(--bg); border-radius: 7px; padding: 5px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mock-stage { position: relative; aspect-ratio: 4 / 3.35; min-height: 380px; }
+  .feed { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px; filter: blur(3px) saturate(0.6); opacity: 0.55; }
+  .feed span { border-radius: 10px; background: linear-gradient(160deg, #3b2f4a, #1f2a3a); }
+  .feed span:nth-child(2) { background: linear-gradient(160deg, #4a2f2f, #2a2a1f); }
+  .feed span:nth-child(3) { background: linear-gradient(160deg, #1f3a33, #2a1f3a); }
+  .overlay { position: absolute; inset: 0; background: rgba(8,8,10,0.86); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .lock { width: 100%; max-width: 420px; text-align: center; }
+  .lock-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .lock-sub { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
+  .countdown { font-family: var(--mono); font-weight: 700; font-size: 52px; line-height: 1; color: var(--amber); letter-spacing: -0.02em; margin: 0 0 12px; font-variant-numeric: tabular-nums; }
+  .meter { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; margin: 0 auto 20px; max-width: 260px; }
+  .meter i { display: block; height: 100%; width: 88%; background: var(--amber); transition: width 1s linear; }
+  .sentence { font-size: 15px; line-height: 1.5; color: var(--text); background: var(--bg-2); border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 12px; user-select: none; -webkit-user-select: none; }
+  .fake-input { display: flex; align-items: center; min-height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: #101013; color: var(--faint); font-size: 15px; text-align: left; margin: 0 0 12px; overflow: hidden; white-space: nowrap; }
+  .fake-input.on { border-color: var(--amber-line); color: var(--text); }
+  .fake-input.ok { border-color: #3ecf8e; }
+  .caret { display: inline-block; width: 2px; height: 1.1em; background: var(--amber); margin-left: 1px; vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .streak { font-family: var(--mono); font-size: 12.5px; color: var(--red); margin: 0; }
+  .streak.good { color: #3ecf8e; }
+  .mock-caption { font-size: 13px; color: var(--faint); margin: 12px 4px 0; text-align: center; }
+
+  /* ---------- sections ---------- */
+  section { padding: 96px 0; }
+  .band { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .kicker, .privacy .kicker, .why .kicker { font-family: var(--mono); font-size: 13px; color: var(--amber); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 12px; }
+  h2 { font-size: clamp(30px, 4.2vw, 44px); line-height: 1.1; letter-spacing: -0.03em; margin: 0 0 16px; font-weight: 800; }
+  h3 { font-size: 20px; letter-spacing: -0.015em; margin: 0 0 8px; line-height: 1.3; }
+  .section-lede { color: var(--muted); max-width: 40em; margin: 0 0 48px; font-size: 18px; }
+
+  .steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: step; }
+  .steps li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; position: relative; counter-increment: step; }
+  .steps li::before { content: "0" counter(step); font-family: var(--mono); font-weight: 700; color: var(--amber); font-size: 14px; display: block; margin-bottom: 18px; }
+  .steps p { margin: 0; color: var(--muted); font-size: 16px; }
+  .steps .quote { display: block; margin-top: 12px; font-style: italic; color: var(--text); font-size: 15px; }
+  .step-note { margin: 24px 0 0; color: var(--faint); font-size: 15px; }
+
+  .why { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+  .why p { color: var(--muted); margin: 0 0 16px; }
+  .why p strong { color: var(--text); font-weight: 600; }
+  .compare { display: grid; gap: 12px; }
+  .compare div { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; background: var(--surface); }
+  .compare .us { border-color: var(--amber-line); background: linear-gradient(180deg, var(--amber-soft), transparent 140%), var(--surface); }
+  .compare h3 { font-size: 17px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .compare h3 span { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--faint); align-self: center; }
+  .compare .us h3 span { color: var(--amber); }
+  .compare p { margin: 0; font-size: 15px; color: var(--muted); }
+
+  /* ---------- ladder ---------- */
+  .ladder-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 36px 32px 28px; }
+  .ladder { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; align-items: end; height: 300px; }
+  .ladder li { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; height: 100%; min-width: 0; }
+  .ladder .bar { border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--amber), #b88600); position: relative; height: calc(var(--h) * 1%); min-height: 12px; }
+  .ladder li:first-child .bar { background: #4a4a52; }
+  .ladder li:last-child .bar { background: repeating-linear-gradient(-45deg, var(--amber) 0 8px, #d19800 8px 16px); }
+  .ladder .val { font-family: var(--mono); font-weight: 700; font-size: 15px; text-align: center; margin-bottom: 8px; white-space: nowrap; }
+  .ladder .lbl { font-size: 12px; color: var(--faint); text-align: center; margin-top: 10px; white-space: nowrap; }
+  .ladder-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .ladder-foot strong { color: var(--text); }
+
+  /* ---------- pricing ---------- */
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; }
+  .plan { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 32px; display: flex; flex-direction: column; }
+  .plan.pro { border-color: var(--amber-line); box-shadow: 0 0 0 1px var(--amber-line), 0 20px 60px -30px rgba(245,179,1,0.35); }
+  .plan-name { font-weight: 700; font-size: 16px; color: var(--muted); margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
+  .plan.pro .plan-name { color: var(--amber); }
+  .price { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin: 0 0 6px; }
+  .price.soon { font-size: 32px; color: var(--muted); padding-top: 8px; }
+  .price small { font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .plan-desc { color: var(--muted); font-size: 15px; margin: 0 0 24px; }
+  .feat { list-style: none; margin: 0 0 28px; padding: 0; display: grid; gap: 12px; font-size: 15.5px; flex: 1; }
+  .feat li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; }
+  .feat li::before { content: ""; width: 16px; height: 16px; margin-top: 4px; border-radius: 50%; background: var(--amber-soft); box-shadow: inset 0 0 0 1.5px var(--amber); }
+  .feat .sub { color: var(--faint); font-size: 14px; display: block; }
+  .plan .btn { width: 100%; }
+  .pricing-note { color: var(--faint); font-size: 14px; margin: 24px 0 0; max-width: 900px; }
+
+  /* ---------- privacy ---------- */
+  .privacy { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: start; }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .facts li { background: var(--surface); padding: 18px 22px; display: grid; grid-template-columns: 110px 1fr; gap: 16px; font-size: 15.5px; }
+  .facts b { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+  .facts span { color: var(--muted); }
+  .privacy p { color: var(--muted); }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 780px; }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq details:first-of-type { border-top: 1px solid var(--line); }
+  .faq summary { list-style: none; cursor: pointer; padding: 22px 40px 22px 0; font-weight: 600; font-size: 18px; position: relative; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 22px; color: var(--amber); transition: transform .2s; }
+  .faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  .faq details p { margin: -6px 0 22px; color: var(--muted); max-width: 44em; }
+
+  /* ---------- maker ---------- */
+  .maker { max-width: 780px; border-left: 3px solid var(--amber); padding: 4px 0 4px 28px; }
+  .maker p { color: var(--muted); font-size: 18px; margin: 0 0 16px; }
+  .maker .sig { font-size: 15px; color: var(--faint); margin: 0; }
+
+  .final { text-align: center; padding: 104px 0; }
+  .final h2 { margin-bottom: 12px; }
+  .final p { color: var(--muted); margin: 0 auto 32px; max-width: 32em; }
+  .final .cta-row { justify-content: center; }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 40px 0 48px; font-size: 14px; color: var(--faint); }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; align-items: center; }
+  .foot nav { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .foot nav a { color: var(--muted); text-decoration: none; }
+  .foot nav a:hover { color: var(--text); }
+  .disclaimer { margin: 24px 0 0; font-size: 13px; line-height: 1.55; max-width: 60em; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 960px) {
+    .hero-grid, .why, .privacy { grid-template-columns: 1fr; gap: 48px; }
+    .steps { grid-template-columns: 1fr; }
+    .hero { padding: 48px 0 72px; }
+  }
+  @media (max-width: 720px) {
+    :root { --gutter: 16px; }
+    body { font-size: 16px; }
+    section { padding: 72px 0; }
+    .head-nav a:not(.btn) { display: none; }
+    .plans { grid-template-columns: 1fr; }
+    .cta-row .btn { flex: 1 1 100%; }
+    .mock-stage { aspect-ratio: auto; min-height: 440px; }
+    .countdown { font-size: 44px; }
+    .lock-title { font-size: 22px; }
+    .ladder-card { padding: 24px 14px 20px; }
+    .ladder { gap: 5px; height: 240px; }
+    .ladder .val { font-size: 11px; }
+    .ladder .lbl { font-size: 10px; }
+    .facts li { grid-template-columns: 1fr; gap: 4px; }
+    .plan { padding: 26px 22px; }
+    .maker { padding-left: 18px; }
+    .maker p { font-size: 17px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .caret { animation: none; }
+    .btn, .meter i { transition: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="TypeToll home"><span class="logo-mark" aria-hidden="true"></span>TypeToll</a>
+    <nav class="head-nav" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <!-- TODO: replace href="#" with the Chrome Web Store listing URL -->
+      <a class="btn btn-primary btn-sm" href="#">Add to Chrome</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Chrome extension · Pay the toll by typing</p>
+        <h1 id="hero-title">The feed is free.<br><span class="hl">Staying on it isn't.</span></h1>
+        <p class="lede">After 5 minutes of short videos, TypeToll covers the feed. To keep going, you wait, then <strong>pay the toll by typing</strong>: a sentence, by hand, saying you're choosing to. Blockers take the feed away and timers just make you wait. This makes you decide. Works on YouTube Shorts, Instagram Reels and X.</p>
+        <div class="cta-row">
+          <!-- TODO: replace href="#" with the Chrome Web Store listing URL -->
+          <a class="btn btn-primary" href="#">Add to Chrome — Free</a>
+          <a class="btn btn-ghost" href="#how">How it works</a>
+        </div>
+        <p class="fine">Free. No account. No tracking. No network requests.</p>
+      </div>
+
+      <figure style="margin:0">
+        <div class="mock" role="img" aria-label="Preview of the TypeToll lock screen over a blurred Shorts feed: the title reads Time's up, a countdown is running, the sentence to type is shown above a disabled input that says Waiting, and a warning reads: 2 misses in a row, next miss locks for 4 minutes.">
+          <div class="mock-bar" aria-hidden="true">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="url">youtube.com/shorts/…</span>
+          </div>
+          <div class="mock-stage" aria-hidden="true">
+            <div class="feed"><span></span><span></span><span></span></div>
+            <div class="overlay">
+              <div class="lock">
+                <p class="lock-title">Time's up</p>
+                <p class="lock-sub">5 minutes used across Shorts, Reels and X.</p>
+                <p class="countdown" id="mock-count">0:14</p>
+                <div class="meter"><i id="mock-meter"></i></div>
+                <p class="sentence">I am choosing, of my own free will, to keep watching short videos</p>
+                <div class="fake-input" id="mock-input">Waiting…</div>
+                <p class="streak" id="mock-streak">2 misses in a row · next miss locks for 4 min</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <figcaption class="mock-caption">The actual lock screen, rebuilt in HTML. Paste is disabled.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="band" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="kicker">How it works</p>
+      <h2 id="how-title">Five minutes. Then a toll.</h2>
+      <p class="section-lede">One shared timer across all three sites, so switching from Shorts to Reels doesn't buy you a fresh start.</p>
+      <ol class="steps">
+        <li>
+          <h3>Watch like normal</h3>
+          <p>Shorts, Reels and X all draw from the same 5-minute budget. Nothing changes until it runs out.</p>
+        </li>
+        <li>
+          <h3>Hit the lock</h3>
+          <p>The page is covered. Wait 30 seconds, then type this sentence by hand and press Enter:
+            <span class="quote">"I am choosing, of my own free will, to keep watching short videos"</span></p>
+        </li>
+        <li>
+          <h3>Pay, or walk away</h3>
+          <p>Type it right and you get 2 more minutes. Get it wrong and the wait doubles. Or just close the tab.</p>
+        </li>
+      </ol>
+      <p class="step-note">Step away for 10 minutes and the timer resets on its own.</p>
+    </div>
+  </section>
+
+  <!-- ================= WHY FRICTION ================= -->
+  <section id="why" aria-labelledby="why-title">
+    <div class="wrap why">
+      <div>
+        <p class="kicker">Why friction</p>
+        <h2 id="why-title">A speed bump, not a prison.</h2>
+        <p>Blockers that hide Shorts already exist. They're great if you want short videos gone for good. <strong>This is for people who don't.</strong> You like a few clips. You just don't like looking up forty minutes later.</p>
+        <p>Short-form feeds are built so that <strong>continuing is the default</strong> and stopping takes effort. TypeToll flips that. Stopping is free. Continuing costs a wait and a sentence you have to mean enough to type.</p>
+        <p>You can always get past it, and you can always uninstall it. The point isn't to make watching impossible. It's to make every extra round a decision instead of a reflex.</p>
+      </div>
+      <div class="compare" role="list">
+        <div role="listitem">
+          <h3>Willpower <span>default</span></h3>
+          <p>Relies on you noticing, mid-scroll, that it's time to stop. The feed is designed so you don't.</p>
+        </div>
+        <div role="listitem">
+          <h3>Hard blockers <span>all or nothing</span></h3>
+          <p>Hide Shorts or Reels entirely. Effective if you want them gone. If you still enjoy some, all-or-nothing is the wrong tool.</p>
+        </div>
+        <div class="us" role="listitem">
+          <h3>TypeToll <span>friction</span></h3>
+          <p>Short videos stay available. Each extra few minutes asks for a pause and a deliberate yes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PENALTY LADDER ================= -->
+  <section class="band" id="ladder" aria-labelledby="ladder-title">
+    <div class="wrap">
+      <p class="kicker">The penalty ladder</p>
+      <h2 id="ladder-title">Mashing the keyboard gets expensive.</h2>
+      <p class="section-lede">Every typo or mismatch doubles the wait before you can try again, up to 64 minutes. One correct entry resets the streak.</p>
+      <div class="ladder-card">
+        <!-- Bar heights are on a log scale: each step is one doubling. -->
+        <ol class="ladder" aria-label="Wait time before the next attempt, by consecutive misses">
+          <li style="--h:10"><span class="val">30s</span><span class="bar"></span><span class="lbl">Start</span></li>
+          <li style="--h:21"><span class="val">1m</span><span class="bar"></span><span class="lbl"><span class="sr-only">after </span>1 miss</span></li>
+          <li style="--h:32"><span class="val">2m</span><span class="bar"></span><span class="lbl">2</span></li>
+          <li style="--h:43"><span class="val">4m</span><span class="bar"></span><span class="lbl">3</span></li>
+          <li style="--h:55"><span class="val">8m</span><span class="bar"></span><span class="lbl">4</span></li>
+          <li style="--h:66"><span class="val">16m</span><span class="bar"></span><span class="lbl">5</span></li>
+          <li style="--h:77"><span class="val">32m</span><span class="bar"></span><span class="lbl">6</span></li>
+          <li style="--h:88"><span class="val">64m</span><span class="bar"></span><span class="lbl">7+</span></li>
+        </ol>
+        <div class="ladder-foot">
+          <span>Numbers under the bars = <strong>misses in a row</strong>. Each step up is one doubling (log scale).</span>
+          <span>Correct entry → back to <strong>30s</strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section id="pricing" aria-labelledby="pricing-title">
+    <div class="wrap">
+      <p class="kicker">Pricing</p>
+      <h2 id="pricing-title">Free, and it does the job.</h2>
+      <p class="section-lede">The free version isn't a trial. Everything described above works, with fixed defaults.</p>
+      <div class="plans">
+        <article class="plan" aria-labelledby="plan-free">
+          <p class="plan-name" id="plan-free">Free</p>
+          <p class="price">$0</p>
+          <p class="plan-desc">The full toll booth, preset.</p>
+          <ul class="feat">
+            <li><span>5-minute shared limit</span></li>
+            <li><span>2 minutes per unlock</span></li>
+            <li><span>Default sentence</span></li>
+            <li><span>YouTube Shorts, Instagram Reels and X, all on</span></li>
+            <li><span>Doubling penalty and 10-minute reset</span></li>
+          </ul>
+          <!-- TODO: replace href="#" with the Chrome Web Store listing URL -->
+          <a class="btn btn-primary" href="#">Add to Chrome — Free</a>
+        </article>
+        <article class="plan pro" aria-labelledby="plan-pro">
+          <p class="plan-name" id="plan-pro">Pro</p>
+          <p class="price soon">Coming soon</p>
+          <p class="plan-desc">Planned for a later version: tune the toll to your habits. Not available yet.</p>
+          <ul class="feat">
+            <li><span>Custom limit <span class="sub">anywhere from 1 to 60 minutes</span></span></li>
+            <li><span>Custom unlock time <span class="sub">1 to 30 minutes per unlock</span></span></li>
+            <li><span>Write your own sentence <span class="sub">e.g. your actual reason for cutting back</span></span></li>
+            <li><span>Turn individual sites on or off</span></li>
+            <li><span>Everything in Free</span></li>
+          </ul>
+        </article>
+      </div>
+      <p class="pricing-note">TypeToll is free today, with nothing to buy. Pro is planned but not for sale yet; pricing will be announced when it ships.</p>
+      <!-- TODO: add real testimonials after launch -->
+    </div>
+  </section>
+
+  <!-- ================= PRIVACY ================= -->
+  <section class="band" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap privacy">
+      <div>
+        <p class="kicker">Privacy</p>
+        <h2 id="privacy-title">It watches a timer, not you.</h2>
+        <p>TypeToll runs entirely in your browser. There's no account to create, no server of ours to send anything to, and no analytics. We don't know what you watch, and we don't want to.</p>
+        <p><a href="privacy.html">Read the full privacy policy</a></p>
+      </div>
+      <ul class="facts">
+        <li><b>Account</b><span>None. Nothing to sign up for.</span></li>
+        <li><b>Analytics</b><span>None. No trackers, no telemetry.</span></li>
+        <li><b>Storage</b><span>Settings and timer state live in your browser (<code>chrome.storage</code>).</span></li>
+        <li><b>Network</b><span>None. The extension makes no network requests of its own.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <p class="kicker">FAQ</p>
+      <h2 id="faq-title">Fair questions.</h2>
+      <div class="faq">
+        <details>
+          <summary>Can't I just uninstall it?</summary>
+          <p>Yes, any time. TypeToll is a speed bump, not a prison. The goal is to stop the half-conscious "one more" scroll, not to fight you when you've genuinely decided to watch. If you find yourself uninstalling it, that was a decision too.</p>
+        </details>
+        <details>
+          <summary>Does it work on mobile?</summary>
+          <p>Chrome on desktop for now. Android is in the works.</p>
+        </details>
+        <details>
+          <summary>What data do you collect?</summary>
+          <p>None. Your timer state is stored locally in your browser, and the extension makes no network requests of its own. Your browsing history and page content never leave your device. Details in the <a href="privacy.html">privacy policy</a>.</p>
+        </details>
+        <details>
+          <summary>Can I change the sentence?</summary>
+          <p>Not yet. The current version uses the default sentence. Writing your own (for example, "I said I'd finish my assignment tonight") is planned for Pro in a later version.</p>
+        </details>
+        <details>
+          <summary>What happens if I'm offline?</summary>
+          <p>Nothing changes. TypeToll runs entirely in your browser and never needs a connection.</p>
+        </details>
+        <details>
+          <summary>Why can't I paste the sentence?</summary>
+          <p>Because pasting takes no thought. Typing it out is the toll: it takes a few seconds of attention, which is usually enough to notice whether you actually want to keep going.</p>
+        </details>
+        <details>
+          <summary>What counts toward the 5 minutes?</summary>
+          <p>Time spent on YouTube Shorts, Instagram Reels and X adds up on one shared timer. Regular YouTube videos aren't counted. If you're away from all three for 10 minutes, the timer resets.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAKER ================= -->
+  <section class="band" id="maker" aria-labelledby="maker-title">
+    <div class="wrap">
+      <p class="kicker">Who made this</p>
+      <h2 id="maker-title" class="sr-only">A note from the maker</h2>
+      <div class="maker">
+        <p>I'm a computer-science student in Japan. During a research internship at a graduate lab, I worked on multi-agent AI systems for behavior change.</p>
+        <p>I built TypeToll for my own doomscrolling first. It's small and honest about what it is: friction, not a cure. I hope it buys you back some evenings too.</p>
+        <!-- TODO: maker's name (and optional link). Do not add a photo or extra story without the maker's approval. -->
+        <p class="sig">— [Maker name TODO], maker of TypeToll</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CTA ================= -->
+  <section class="final" aria-labelledby="final-title">
+    <div class="wrap">
+      <h2 id="final-title">Make stopping the default.</h2>
+      <p>Install it, forget about it, and let the toll booth do the remembering.</p>
+      <div class="cta-row">
+        <!-- TODO: replace href="#" with the Chrome Web Store listing URL -->
+        <a class="btn btn-primary" href="#">Add to Chrome — Free</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true"></span>TypeToll</a>
+      <nav aria-label="Footer">
+        <a href="privacy.html">Privacy</a>
+        <a href="#">Terms</a><!-- TODO: Terms of Service page -->
+        <!-- v1.1: add a Refunds link here when Pro goes on sale -->
+        <a href="#">Contact</a><!-- TODO: mailto:contact email -->
+      </nav>
+    </div>
+    <p class="disclaimer">Not affiliated with Google, YouTube, Meta, or X. TypeToll is an independent project; all trademarks belong to their respective owners.</p>
+  </div>
+</footer>
+
+<script>
+  // Live demo for the lock-screen mock: count down, "type" the sentence, unlock, repeat.
+  (function () {
+    var count = document.getElementById("mock-count");
+    var meter = document.getElementById("mock-meter");
+    var input = document.getElementById("mock-input");
+    var streak = document.getElementById("mock-streak");
+    if (!count) return;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return; // keep the static "Waiting…" state
+
+    var TOTAL = 120, START = 14; // mid-way through a 2-minute wait (2 misses in a row)
+    var SENTENCE = "I am choosing, of my own free will, to keep watching short videos";
+    var left, timer;
+
+    function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+    function reset() {
+      left = START;
+      count.textContent = fmt(left);
+      meter.style.width = ((TOTAL - left) / TOTAL * 100) + "%";
+      input.className = "fake-input";
+      input.textContent = "Waiting…";
+      streak.className = "streak";
+      streak.textContent = "2 misses in a row · next miss locks for 4 min";
+      timer = setInterval(tick, 1000);
+    }
+    function tick() {
+      left--;
+      count.textContent = fmt(Math.max(left, 0));
+      meter.style.width = ((TOTAL - left) / TOTAL * 100) + "%";
+      if (left <= 0) { clearInterval(timer); type(); }
+    }
+    function type() {
+      var i = 0;
+      input.className = "fake-input on";
+      var typed = document.createElement("span");
+      var caret = document.createElement("span");
+      caret.className = "caret";
+      input.textContent = "";
+      input.appendChild(typed);
+      input.appendChild(caret);
+      (function next() {
+        if (i <= SENTENCE.length) {
+          // show the tail so the latest characters stay visible in the narrow box
+          typed.textContent = SENTENCE.slice(Math.max(0, i - 34), i);
+          i++;
+          setTimeout(next, 45 + Math.random() * 60);
+        } else {
+          input.className = "fake-input ok";
+          caret.remove();
+          streak.className = "streak good";
+          streak.textContent = "Unlocked · +2:00 · streak reset";
+          count.textContent = "2:00";
+          setTimeout(reset, 3200);
+        }
+      })();
+    }
+    reset();
+  })();
+</script>
+</body>
+</html>
